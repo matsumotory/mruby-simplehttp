@@ -1,5 +1,7 @@
 # SimpleHttp Class for mruby
-SimpleHttp of iij/mruby support mruby/mruby using mruby-uv and mruby-http
+refactored SimpleHttp using mruby-uv and mruby-http
+
+original code is iij/mruby 
 
 ## install by mrbgems
 ```bash
