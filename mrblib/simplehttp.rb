@@ -6,7 +6,15 @@ class SimpleHttp
 
   def initialize(address, port = DEFAULTPORT)
     @uri = {}
+    ip = ""
+    UV::getaddrinfo(address, "http") do |x, info|
+      if info 
+        ip = info.addr
+      end
+    end
+    UV::run()
     @uri[:address] = address
+    @uri[:ip] = ip
     @uri[:port] = port ? port.to_i : DEFAULTPORT
     self
   end
@@ -34,11 +42,10 @@ class SimpleHttp
     response_text = send_request(request_header)
     SimpleHttpResponse.new(response_text)
   end
-
   def send_request(request_header)
     socket = UV::TCP.new()
     response_text = ""
-    socket.connect(UV.ip4_addr(@uri[:address], @uri[:port])) do |x|
+    socket.connect(UV.ip4_addr(@uri[:ip], @uri[:port])) do |x|
       if x == 0
         socket.write(request_header) do |x|
           socket.read_start do |b|
@@ -49,6 +56,7 @@ class SimpleHttp
         socket.close()
       end
     end
+    
     UV::run()
     response_text
   end
