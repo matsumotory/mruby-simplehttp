@@ -22,12 +22,12 @@ class SimpleHttp
   def address; @uri[:address]; end
   def port; @uri[:port]; end
 
-  def get(path = "/", request = nil)
-    request("GET", path, request)
+  def get(path = "/", req = nil)
+    request("GET", path, req)
   end
 
-  def post(path = "/", request = nil)
-    request("POST", path, request)
+  def post(path = "/", req = nil)
+    request("POST", path, req)
   end
 
   # private
@@ -45,7 +45,7 @@ class SimpleHttp
   def send_request(request_header)
     socket = UV::TCP.new()
     response_text = ""
-    socket.connect(UV.ip4_addr(@uri[:ip], @uri[:port])) do |x|
+    socket.connect(UV.ip4_addr(@uri[:ip].sin_addr, @uri[:port])) do |x|
       if x == 0
         socket.write(request_header) do |x|
           socket.read_start do |b|
