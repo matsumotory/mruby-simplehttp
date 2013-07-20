@@ -90,7 +90,9 @@ class SimpleHttp
     SEP = SimpleHttp::SEP
     def initialize(response_text)
       @response = {}
-      if response_text.include?(SEP + SEP)
+      if response_text == ''
+        @response["header"] = nil
+      elsif response_text.include?(SEP + SEP)
         @response["header"], @response["body"] = response_text.split(SEP + SEP)
       else
         @response["header"] = response_text
