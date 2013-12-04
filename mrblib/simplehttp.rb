@@ -3,18 +3,48 @@ class SimpleHttp
   HTTP_VERSION = "HTTP/1.0"
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
+  USE_SOCKET = false
+  USE_UV = false
+
+  def self.socket_class_exist?
+      c = Module.const_get("TCPSocket")
+      c.is_a?(Class)
+  rescue
+      return false
+  end
+
+  def self.uv_module_exist?
+      c = Module.const_get("UV")
+      c.is_a?(Module)
+  rescue
+      return false
+  end
+
+  if socket_class_exist?
+    USE_SOCKET = true
+  end
+
+  if uv_module_exist?
+    USE_UV = true
+  end
 
   def initialize(address, port = DEFAULTPORT)
     @uri = {}
-    ip = ""
-    UV::getaddrinfo(address, "http") do |x, info|
-      if info 
-        ip = info.addr
+    if USE_SOCKET
+      # nothing
+    elsif USE_UV
+      ip = ""
+      UV::getaddrinfo(address, "http") do |x, info|
+        if info 
+          ip = info.addr
+        end
       end
+      UV::run()
+      @uri[:ip] = ip
+    else
+      raise "Not found Socket class or UV Module"
     end
-    UV::run()
     @uri[:address] = address
-    @uri[:ip] = ip
     @uri[:port] = port ? port.to_i : DEFAULTPORT
     self
   end
@@ -43,21 +73,29 @@ class SimpleHttp
     SimpleHttpResponse.new(response_text)
   end
   def send_request(request_header)
-    socket = UV::TCP.new()
     response_text = ""
-    socket.connect(UV.ip4_addr(@uri[:ip].sin_addr, @uri[:port])) do |x|
-      if x == 0
-        socket.write(request_header) do |x|
-          socket.read_start do |b|
-            response_text += b.to_s 
-          end
-        end
-      else
-        socket.close()
+    if USE_SOCKET
+      socket = TCPSocket.new(@uri[:address], @uri[:port])
+      socket.write(request_header)
+      while (t = socket.read(1024))
+        response_text += t
       end
+      socket.close
+    else
+      socket = UV::TCP.new()
+      socket.connect(UV.ip4_addr(@uri[:ip].sin_addr, @uri[:port])) do |x|
+        if x == 0
+          socket.write(request_header) do |x|
+            socket.read_start do |b|
+              response_text += b.to_s 
+            end
+          end
+        else
+          socket.close()
+        end
+      end
+      UV::run()
     end
-    
-    UV::run()
     response_text
   end
 
