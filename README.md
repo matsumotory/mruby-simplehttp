@@ -1,16 +1,17 @@
 # SimpleHttp Class for mruby
-refactored SimpleHttp using mruby-uv and mruby-http
+refactored SimpleHttp using mruby-socket or mruby-uv and mruby-http
 
 original code is iij/mruby 
 
 ## install by mrbgems
-```bash
-git clone git://github.com/matsumoto-r/mruby-simplehttp.git
-cp -pr mruby-simplehttp ${MRUBY_ROOT}/mrbgems/g/.
-echo mruby-simplehttp >> ${MRUBY_ROOT}/mrbgems/GEMS.active
-cd ${MRUBY_ROOT}
-make
-./bin/mruby ${MRUBY_ROOT}/mrbgems/g/mruby-simplehttp/example/get.rb
+ - add conf.gem line to `build_config.rb`
+```ruby
+MRuby::Build.new do |conf|
+
+    # ... (snip) ...
+
+    conf.gem :git => 'https://github.com/matsumoto-r/mruby-simplehttp.git'
+end
 ```
 
 ## example
