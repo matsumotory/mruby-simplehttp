@@ -42,7 +42,7 @@ class SimpleHttp
       UV::run()
       @uri[:ip] = ip
     else
-      raise "Not found Socket class or UV Module"
+      raise "Not found Socket Class or UV Module"
     end
     @uri[:address] = address
     @uri[:port] = port ? port.to_i : DEFAULTPORT
@@ -72,6 +72,7 @@ class SimpleHttp
     response_text = send_request(request_header)
     SimpleHttpResponse.new(response_text)
   end
+
   def send_request(request_header)
     response_text = ""
     if USE_SOCKET
@@ -81,7 +82,7 @@ class SimpleHttp
         response_text += t
       end
       socket.close
-    else
+    elsif USE_UV
       socket = UV::TCP.new()
       socket.connect(UV.ip4_addr(@uri[:ip].sin_addr, @uri[:port])) do |x|
         if x == 0
@@ -95,6 +96,8 @@ class SimpleHttp
         end
       end
       UV::run()
+    else
+      raise "Not found Socket Class or UV Module"
     end
     response_text
   end
