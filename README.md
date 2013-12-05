@@ -1,5 +1,5 @@
 # SimpleHttp Class for mruby
-refactored SimpleHttp using mruby-socket or mruby-uv and mruby-http
+refactored SimpleHttp using mruby-socket or mruby-uv
 
 original code is iij/mruby 
 
