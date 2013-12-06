@@ -3,36 +3,35 @@ class SimpleHttp
   HTTP_VERSION = "HTTP/1.0"
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
-  USE_SOCKET = false
-  USE_UV = false
 
-  def self.socket_class_exist?
+  def socket_class_exist?
       c = Module.const_get("TCPSocket")
       c.is_a?(Class)
   rescue
       return false
   end
 
-  def self.uv_module_exist?
+  def uv_module_exist?
       c = Module.const_get("UV")
       c.is_a?(Module)
   rescue
       return false
   end
 
-  if socket_class_exist?
-    USE_SOCKET = true
-  end
-
-  if uv_module_exist?
-    USE_UV = true
-  end
-
   def initialize(address, port = DEFAULTPORT)
+    @use_socket = false
+    @use_uv = false
+    if socket_class_exist?
+      @use_socket = true
+    end
+
+    if uv_module_exist?
+      @use_uv = true
+    end
     @uri = {}
-    if USE_SOCKET
+    if @use_socket
       # nothing
-    elsif USE_UV
+    elsif @use_uv
       ip = ""
       UV::getaddrinfo(address, "http") do |x, info|
         if info 
@@ -75,14 +74,14 @@ class SimpleHttp
 
   def send_request(request_header)
     response_text = ""
-    if USE_SOCKET
+    if @use_socket
       socket = TCPSocket.new(@uri[:address], @uri[:port])
       socket.write(request_header)
       while (t = socket.read(1024))
         response_text += t
       end
       socket.close
-    elsif USE_UV
+    elsif @use_uv
       socket = UV::TCP.new()
       socket.connect(UV.ip4_addr(@uri[:ip].sin_addr, @uri[:port])) do |x|
         if x == 0
