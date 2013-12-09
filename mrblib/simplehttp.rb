@@ -1,5 +1,6 @@
 class SimpleHttp
   DEFAULTPORT = 80
+  DEFAULTHTTPSPORT = 443
   HTTP_VERSION = "HTTP/1.0"
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
@@ -18,7 +19,7 @@ class SimpleHttp
       return false
   end
 
-  def initialize(address, port = DEFAULTPORT)
+  def initialize(schema, address, port = DEFAULTPORT)
     @use_socket = false
     @use_uv = false
     if socket_class_exist?
@@ -43,8 +44,13 @@ class SimpleHttp
     else
       raise "Not found Socket Class or UV Module"
     end
+    @uri[:schema] = schema
     @uri[:address] = address
-    @uri[:port] = port ? port.to_i : DEFAULTPORT
+    if schema == "https"
+      @uri[:port] = port ? port.to_i : DEFAULTHTTPSPORT
+    else
+      @uri[:port] = port ? port.to_i : DEFAULTPORT
+    end
     self
   end
 
@@ -76,11 +82,28 @@ class SimpleHttp
     response_text = ""
     if @use_socket
       socket = TCPSocket.new(@uri[:address], @uri[:port])
-      socket.write(request_header)
-      while (t = socket.read(1024))
-        response_text += t
+      if @uri[:schema] == "https"
+        entropy = PolarSSL::Entropy.new
+        ctr_drbg = PolarSSL::CtrDrbg.new entropy
+        ssl = PolarSSL::SSL.new
+        ssl.set_endpoint PolarSSL::SSL::SSL_IS_CLIENT
+        ssl.set_rng ctr_drbg
+        ssl.set_socket socket
+        ssl.handshake
+        ssl.write request_header
+        while chunk = ssl.read(2048)
+          response_text += chunk
+        end
+        ssl.close_notify
+        socket.close
+        ssl.close
+      else
+        socket.write(request_header)
+        while (t = socket.read(1024))
+          response_text += t
+        end
+        socket.close
       end
-      socket.close
     elsif @use_uv
       socket = UV::TCP.new()
       socket.connect(UV.ip4_addr(@uri[:ip].sin_addr, @uri[:port])) do |x|
