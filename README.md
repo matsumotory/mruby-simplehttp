@@ -1,5 +1,7 @@
 # SimpleHttp Class for mruby
-refactored SimpleHttp using mruby-socket or mruby-uv
+Simple http or https connection class for mruby.
+
+refactored SimpleHttp using mruby-polarssl and mruby-socket or mruby-uv
 
 original code is iij/mruby 
 
@@ -17,7 +19,7 @@ end
 ## example
 
 ```ruby
-p SimpleHttp.new("127.0.0.1", 80).request("GET", "/index.html", {'User-Agent' => "test-agent"})
+p SimpleHttp.new("http", "127.0.0.1", 80).request("GET", "/index.html", {'User-Agent' => "test-agent"})
 ```
 
 # License
