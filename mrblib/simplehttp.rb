@@ -19,7 +19,7 @@ class SimpleHttp
       return false
   end
 
-  def initialize(schema, address, port = DEFAULTPORT)
+  def initialize(schema, address, port = nil)
     @use_socket = false
     @use_uv = false
     if socket_class_exist?
