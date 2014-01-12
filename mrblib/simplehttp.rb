@@ -156,7 +156,7 @@ class SimpleHttp
       if response_text.empty?
         @response["header"] = nil
       elsif response_text.include?(SEP + SEP)
-        @response["header"], @response["body"] = response_text.split(SEP + SEP)
+        @response["header"], @response["body"] = response_text.split(SEP + SEP, 2)
       else
         @response["header"] = response_text
       end
