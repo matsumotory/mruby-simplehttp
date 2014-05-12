@@ -153,6 +153,7 @@ class SimpleHttp
     SEP = SimpleHttp::SEP
     def initialize(response_text)
       @response = {}
+      @headers = {}
       if response_text.empty?
         @response["header"] = nil
       elsif response_text.include?(SEP + SEP)
@@ -168,6 +169,7 @@ class SimpleHttp
     def []=(key, value);  @response[key] = value; end
 
     def header; @response['header']; end
+    def headers; @headers; end
     def body; @response['body']; end
     def status; @response['status']; end
     def code; @response['code']; end
@@ -198,6 +200,7 @@ class SimpleHttp
         if line.include?(": ")
           k,v = line.split(": ")
           @response[k.downcase] = v
+          @headers[k.downcase] = v
         end
       end
     end
