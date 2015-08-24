@@ -34,7 +34,7 @@ class SimpleHttp
       # nothing
     elsif @use_uv
       ip = ""
-      UV::getaddrinfo(address, "http") do |x, info|
+      UV::getaddrinfo(address, "http", ai_family: :ipv4) do |x, info|
         if info 
           ip = info.addr
         end
