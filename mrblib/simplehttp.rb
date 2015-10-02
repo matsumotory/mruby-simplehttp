@@ -130,8 +130,17 @@ class SimpleHttp
     body   = ""
     str += sprintf("%s %s %s", method, @uri[:path], HTTP_VERSION) + SEP
     header = {}
+    puts "#{req}"
     req.each do |key,value|
-      header[key.capitalize] = value
+      if ! header[key.capitalize].nil?
+        if header[key.capitalize].kind_of?(Array)
+          header[key.capitalize] << value
+        else
+          header[key.capitalize] = [header[key.capitalize], value]
+        end
+      else
+        header[key.capitalize] = value
+      end
     end
     header["Host"] = @uri[:address]  unless header.keys.include?("Host")
     header["Accept"] = DEFAULT_ACCEPT  unless header.keys.include?("Accept")
@@ -199,8 +208,18 @@ class SimpleHttp
       h.each do |line|
         if line.include?(": ")
           k,v = line.split(": ")
-          @response[k.downcase] = v
-          @headers[k.downcase] = v
+          if !  @response[k.downcase].nil?
+            if  @response[k.downcase].kind_of?(Array)
+              @response[k.downcase] << v
+              @headers[k.downcase] << v
+            else
+              @response[k.downcase] = [@response[k.downcase], v]
+              @headers[k.downcase] = [@headers[k.downcase], v]
+            end
+          else
+            @response[k.downcase] = v
+            @headers[k.downcase] = v
+          end
         end
       end
     end
