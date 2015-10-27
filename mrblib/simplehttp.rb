@@ -130,7 +130,6 @@ class SimpleHttp
     body   = ""
     str += sprintf("%s %s %s", method, @uri[:path], HTTP_VERSION) + SEP
     header = {}
-    puts "#{req}"
     req.each do |key,value|
       if ! header[key.capitalize].nil?
         if header[key.capitalize].kind_of?(Array)
