@@ -57,16 +57,16 @@ class SimpleHttp
   def address; @uri[:address]; end
   def port; @uri[:port]; end
 
-  def get(path = "/", req = nil)
-    request("GET", path, req)
+  def get(path = "/", req = nil, &b)
+    request("GET", path, req, &b)
   end
 
-  def post(path = "/", req = nil)
+  def post(path = "/", req = nil, &b)
     request("POST", path, req)
   end
 
   # private
-  def request(method, path, req)
+  def request(method, path, req, &b)
     @uri[:path] = path
     if @uri[:path].nil?
       @uri[:path] = "/"
@@ -74,7 +74,7 @@ class SimpleHttp
       @uri[:path] = "/" + @uri[:path]
     end
     request_header = create_request_header(method.upcase.to_s, req)
-    response_text = send_request(request_header)
+    response_text = send_request(request_header, &b)
     SimpleHttpResponse.new(response_text)
   end
 
@@ -92,6 +92,11 @@ class SimpleHttp
         ssl.handshake
         ssl.write request_header
         while chunk = ssl.read(2048)
+          if block_given?
+            yield chunk
+            next
+          end
+          
           response_text += chunk
         end
         ssl.close_notify
@@ -100,6 +105,11 @@ class SimpleHttp
       else
         socket.write(request_header)
         while (t = socket.read(1024))
+          if block_given?
+            yield t
+            next
+          end
+                  
           response_text += t
         end
         socket.close
@@ -110,6 +120,11 @@ class SimpleHttp
         if x == 0
           socket.write(request_header) do |x|
             socket.read_start do |b|
+              if block_given?
+                yield b.to_s
+                next
+              end    
+                      
               response_text += b.to_s 
             end
           end
