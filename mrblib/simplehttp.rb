@@ -65,6 +65,10 @@ class SimpleHttp
     request("POST", path, req)
   end
 
+  def put(path = "/", req = nil, &b)
+    request("PUT", path, req)
+  end
+
   # private
   def request(method, path, req, &b)
     @uri[:path] = path
@@ -163,7 +167,7 @@ class SimpleHttp
       body = header["Body"]
       header.delete("Body")
     end
-    if method == "POST" && (not header.keys.include?("content-length".capitalize))
+    if ["POST", "PUT"].include?(method) && (not header.keys.include?("content-length".capitalize))
         header["Content-Length"] = (body || '').length
     end
     header.keys.sort.each do |key|
