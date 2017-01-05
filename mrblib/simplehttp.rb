@@ -5,6 +5,13 @@ class SimpleHttp
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
 
+  def unix_socket_class_exist?
+      c = Module.const_get("UNIXSocket")
+      c.is_a?(Class)
+  rescue
+    return false
+  end
+
   def socket_class_exist?
       c = Module.const_get("TCPSocket")
       c.is_a?(Class)
@@ -20,8 +27,18 @@ class SimpleHttp
   end
 
   def initialize(schema, address, port = nil)
+
+    @uri = {}
+    if schema == 'unix'
+      raise "UNIXSocket class not found" unless unix_socket_class_exist?
+      @uri[:schema] = schema
+      @uri[:file] = address
+      return self
+    end
+
     @use_socket = false
     @use_uv = false
+
     if socket_class_exist?
       @use_socket = true
     end
@@ -29,7 +46,7 @@ class SimpleHttp
     if uv_module_exist?
       @use_uv = true
     end
-    @uri = {}
+    
     if @use_socket
       # nothing
     elsif @use_uv
@@ -84,7 +101,19 @@ class SimpleHttp
 
   def send_request(request_header)
     response_text = ""
-    if @use_socket
+    if @uri[:schema] == "unix"
+        socket = UNIXSocket.open(@uri[:file])
+        socket.write(request_header)
+        while (t = socket.read(1024))
+          if block_given?
+            yield t
+            next
+          end
+          response_text += t
+        end
+        socket.close
+
+    elsif @use_socket
       socket = TCPSocket.new(@uri[:address], @uri[:port])
       if @uri[:schema] == "https"
         entropy = PolarSSL::Entropy.new
