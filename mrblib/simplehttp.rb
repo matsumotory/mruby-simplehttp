@@ -6,21 +6,21 @@ class SimpleHttp
   SEP = "\r\n"
 
   def unix_socket_class_exist?
-      c = Module.const_get("UNIXSocket")
+      c = Object.const_get("UNIXSocket")
       c.is_a?(Class)
   rescue
     return false
   end
 
   def socket_class_exist?
-      c = Module.const_get("TCPSocket")
+      c = Object.const_get("TCPSocket")
       c.is_a?(Class)
   rescue
       return false
   end
 
   def uv_module_exist?
-      c = Module.const_get("UV")
+      c = Object.const_get("UV")
       c.is_a?(Module)
   rescue
       return false
