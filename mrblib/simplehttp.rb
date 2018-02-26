@@ -4,7 +4,7 @@ class SimpleHttp
   HTTP_VERSION = "HTTP/1.0"
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
-  BUF_SIZE = 4096
+  BUF_SIZE = ENV['BUF_SIZE'] || 4096
   def unix_socket_class_exist?
       c = Object.const_get("UNIXSocket")
       c.is_a?(Class)
