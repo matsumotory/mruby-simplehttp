@@ -4,7 +4,7 @@ class SimpleHttp
   HTTP_VERSION = "HTTP/1.0"
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
-
+  BUF_SIZE = 4096
   def unix_socket_class_exist?
       c = Object.const_get("UNIXSocket")
       c.is_a?(Class)
@@ -104,7 +104,7 @@ class SimpleHttp
     if @uri[:schema] == "unix"
         socket = UNIXSocket.open(@uri[:file])
         socket.write(request_header)
-        while (t = socket.read(1024))
+        while (t = socket.read(BUF_SIZE))
           if block_given?
             yield t
             next
@@ -137,7 +137,7 @@ class SimpleHttp
         ssl.close
       else
         socket.write(request_header)
-        while (t = socket.read(1024))
+        while (t = socket.read(BUF_SIZE))
           if block_given?
             yield t
             next
