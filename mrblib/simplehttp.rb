@@ -109,7 +109,7 @@ class SimpleHttp
             yield t
             next
           end
-          response_text += t
+          response_text << t
         end
         socket.close
 
@@ -130,7 +130,7 @@ class SimpleHttp
             next
           end
           
-          response_text += chunk
+          response_text << chunk
         end
         ssl.close_notify
         socket.close
@@ -143,7 +143,7 @@ class SimpleHttp
             next
           end
                   
-          response_text += t
+          response_text << t
         end
         socket.close
       end
@@ -158,7 +158,7 @@ class SimpleHttp
                 next
               end    
                       
-              response_text += b.to_s 
+              response_text << b.to_s 
             end
           end
         else
@@ -176,7 +176,7 @@ class SimpleHttp
     req = {}  unless req
     str = ""
     body   = ""
-    str += sprintf("%s %s %s", method, @uri[:path], HTTP_VERSION) + SEP
+    str << sprintf("%s %s %s", method, @uri[:path], HTTP_VERSION) + SEP
     header = {}
     req.each do |key,value|
       if ! header[key.capitalize].nil?
@@ -200,7 +200,7 @@ class SimpleHttp
         header["Content-Length"] = (body || '').length
     end
     header.keys.sort.each do |key|
-      str += sprintf("%s: %s", key, header[key]) + SEP
+      str << sprintf("%s: %s", key, header[key]) + SEP
     end
     str + SEP + body
   end
