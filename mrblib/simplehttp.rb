@@ -26,12 +26,12 @@ class SimpleHttp
       return false
   end
 
-  def initialize(schema, address, port = nil)
+  def initialize(scheme, address, port = nil)
 
     @uri = {}
-    if schema == 'unix'
+    if scheme == 'unix'
       raise "UNIXSocket class not found" unless unix_socket_class_exist?
-      @uri[:schema] = schema
+      @uri[:scheme] = scheme
       @uri[:file] = address
       return self
     end
@@ -61,9 +61,9 @@ class SimpleHttp
     else
       raise "Not found Socket Class or UV Module"
     end
-    @uri[:schema] = schema
+    @uri[:scheme] = scheme
     @uri[:address] = address
-    if schema == "https"
+    if scheme == "https"
       @uri[:port] = port ? port.to_i : DEFAULTHTTPSPORT
     else
       @uri[:port] = port ? port.to_i : DEFAULTPORT
@@ -101,7 +101,7 @@ class SimpleHttp
 
   def send_request(request_header)
     response_text = ""
-    if @uri[:schema] == "unix"
+    if @uri[:scheme] == "unix"
         socket = UNIXSocket.open(@uri[:file])
         socket.write(request_header)
         while (t = socket.read(BUF_SIZE.to_i))
@@ -115,7 +115,7 @@ class SimpleHttp
 
     elsif @use_socket
       socket = TCPSocket.new(@uri[:address], @uri[:port])
-      if @uri[:schema] == "https"
+      if @uri[:scheme] == "https"
         entropy = PolarSSL::Entropy.new
         ctr_drbg = PolarSSL::CtrDrbg.new entropy
         ssl = PolarSSL::SSL.new
