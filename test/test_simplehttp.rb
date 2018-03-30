@@ -39,6 +39,9 @@ end
 server = SimpleHttpServer.new(server_ip: host, port: port, app: app)
 pid = fork { server.run }
 
+# WORKAROUND: if without sleep, it often fails to test.
+sleep 1
+
 assert '#get' do
   http = SimpleHttp.new('http', host, port)
 
