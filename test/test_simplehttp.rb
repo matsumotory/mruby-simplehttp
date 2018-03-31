@@ -14,6 +14,7 @@ assert '#port' do
   assert_equal 10080, http.port
 end
 
+
 host = '127.0.0.1'
 port = 8000
 app = Proc.new do |env|
@@ -25,7 +26,7 @@ app = Proc.new do |env|
 
   case path
   when '/index.html'
-    headers['Content-type'] = 'text/html; charset=utf-8'
+    headers['Content-Type'] = 'text/html; charset=utf-8'
     body = 'Hello World'
   when '/notfound'
     # Custom error response message
@@ -42,13 +43,13 @@ pid = fork { server.run }
 # WORKAROUND: if without sleep, it often fails to test.
 sleep 1
 
-assert '#get' do
+assert 'SimpleHttp#get' do
   http = SimpleHttp.new('http', host, port)
 
   res = http.get('/index.html', {'User-Agent' => 'test-agent'})
   assert_equal 200, res.code
   assert_equal '200 OK', res.status
-  assert_include res.header.split("\r\n"), 'Content-type:text/html; charset=utf-8'
+  assert_include res.header.split("\r\n"), 'Content-Type:text/html; charset=utf-8'
   assert_equal 'Hello World', res.body
 
   res = http.get('/notfound', {'User-Agent' => 'test-agent'})
