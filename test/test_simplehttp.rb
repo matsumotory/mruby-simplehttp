@@ -34,6 +34,11 @@ app = Proc.new do |env|
     code = 404
   end
 
+  if method == 'POST' or method == 'PUT'
+    headers['Content-Type'] = 'text/html; charset=utf-8'
+    headers['Content-Length'] = env['Content-length']
+  end
+
   [code, headers, [body]]
 end
 
@@ -56,7 +61,28 @@ assert 'SimpleHttp#get' do
   assert_equal 404, res.code
   assert_equal '404 Not Found', res.status
   assert_equal 'Not Found on this server: /notfound', res.body
+end
 
+assert 'SimpleHttp#post' do
+  skip 'mruby-simplehttpserver doesn\'t yet support for getting message body.'
+
+  http = SimpleHttp.new('http', host, port)
+
+  res = http.post('/upload', {'Body' => 'Hello World', 'Content-Length' => '11'})
+  assert_equal 200, res.code
+  assert_equal '200 OK', res.status
+  assert_include res.header.split("\r\n"), 'Content-Length:11'
+end
+
+assert 'SimpleHttp#put' do
+  skip 'mruby-simplehttpserver doesn\'t yet support for getting message body.'
+
+  http = SimpleHttp.new('http', host, port)
+
+  res = http.put('/upload', {'Body' => 'Hello World', 'Content-Length' => '11'})
+  assert_equal 200, res.code
+  assert_equal '200 OK', res.status
+  assert_include res.header.split("\r\n"), 'Content-Length:11'
 end
 
 Process.kill :TERM, pid
