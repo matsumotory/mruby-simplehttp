@@ -8,6 +8,7 @@ MRuby::Gem::Specification.new('mruby-simplehttp') do |spec|
   spec.add_test_dependency('mruby-sprintf', :core => 'mruby-sprintf')
   spec.add_dependency('mruby-polarssl')
   spec.add_test_dependency('mruby-simplehttpserver')
+  spec.add_test_dependency('mruby-sleep')
 
   # need mruby-socket or mruby-uv
   if MRuby::Source::MRUBY_VERSION >= '1.4.0'
