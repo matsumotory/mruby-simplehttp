@@ -5,6 +5,9 @@ compiler:
 env:
   - MRUBY_VERSION=1.4.0
   - MRUBY_VERSION=master
+matrix:
+  allow_failures:
+    - env: MRUBY_VERSION=master
 before_install:
     - sudo apt-get -qq update
 install:
