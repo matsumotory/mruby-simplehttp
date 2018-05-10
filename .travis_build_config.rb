@@ -3,7 +3,6 @@ MRuby::Build.new do |conf|
   conf.gembox 'default'
   conf.enable_test
   conf.gem File.expand_path(File.dirname(__FILE__))
-  conf.gem core: 'mruby-io'
 
   if ENV['DEBUG'] == 'true'
     conf.enable_debug
