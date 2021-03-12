@@ -124,8 +124,9 @@ class SimpleHttp
         ssl.set_rng ctr_drbg
         ssl.set_socket socket
         ssl.handshake
-        ssl.write request_header
-        while chunk = ssl.read(BUF_SIZE.to_i)
+        slice_by_buffer_size(request_header).each do |str|
+          ssl.write str
+        end
         while chunk = ssl.read(READ_BUF_SIZE.to_i)
           if block_given?
             yield chunk
@@ -138,8 +139,9 @@ class SimpleHttp
         socket.close
         ssl.close
       else
-        socket.write(request_header)
-        while (t = socket.read(BUF_SIZE.to_i))
+        slice_by_buffer_size(request_header).each do |str|
+          socket.write str
+        end
         while (t = socket.read(READ_BUF_SIZE.to_i))
           if block_given?
             yield t
@@ -206,6 +208,12 @@ class SimpleHttp
       str << sprintf("%s: %s", key, header[key]) + SEP
     end
     str + SEP + body
+  end
+
+  def slice_by_buffer_size(str, buffer_size: WRITE_BUF_SIZE)
+    (1..(str.size / buffer_size + 1)).map do |i|
+      str[((i - 1) * buffer_size)...(i * buffer_size)]
+    end
   end
 
   class SimpleHttpResponse
