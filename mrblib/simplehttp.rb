@@ -5,6 +5,7 @@ class SimpleHttp
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
   BUF_SIZE = ENV['BUF_SIZE'] || 4096
+  WRITE_BUF_SIZE = ENV['WRITE_BUF_SIZE'] || ENV['BUF_SIZE'] || 4096
   def unix_socket_class_exist?
       c = Object.const_get("UNIXSocket")
       c.is_a?(Class)
