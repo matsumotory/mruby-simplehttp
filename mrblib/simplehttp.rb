@@ -210,7 +210,7 @@ class SimpleHttp
     str + SEP + body
   end
 
-  def slice_by_buffer_size(str, buffer_size: WRITE_BUF_SIZE)
+  def slice_by_buffer_size(str, buffer_size = WRITE_BUF_SIZE)
     (1..(str.size / buffer_size + 1)).map do |i|
       str[((i - 1) * buffer_size)...(i * buffer_size)]
     end
