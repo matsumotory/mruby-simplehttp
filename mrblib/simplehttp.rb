@@ -4,7 +4,8 @@ class SimpleHttp
   HTTP_VERSION = "HTTP/1.0"
   DEFAULT_ACCEPT = "*/*"
   SEP = "\r\n"
-  BUF_SIZE = ENV['BUF_SIZE'] || 4096
+  READ_BUF_SIZE = ENV['READ_BUF_SIZE'] || ENV['BUF_SIZE'] || 4096
+  WRITE_BUF_SIZE = ENV['WRITE_BUF_SIZE'] || ENV['BUF_SIZE'] || 4096
   def unix_socket_class_exist?
       c = Object.const_get("UNIXSocket")
       c.is_a?(Class)
@@ -104,7 +105,7 @@ class SimpleHttp
     if @uri[:scheme] == "unix"
         socket = UNIXSocket.open(@uri[:file])
         socket.write(request_header)
-        while (t = socket.read(BUF_SIZE.to_i))
+        while (t = socket.read(READ_BUF_SIZE.to_i))
           if block_given?
             yield t
             next
@@ -123,8 +124,10 @@ class SimpleHttp
         ssl.set_rng ctr_drbg
         ssl.set_socket socket
         ssl.handshake
-        ssl.write request_header
-        while chunk = ssl.read(BUF_SIZE.to_i)
+        slice_by_buffer_size(request_header).each do |str|
+          ssl.write str
+        end
+        while chunk = ssl.read(READ_BUF_SIZE.to_i)
           if block_given?
             yield chunk
             next
@@ -136,8 +139,10 @@ class SimpleHttp
         socket.close
         ssl.close
       else
-        socket.write(request_header)
-        while (t = socket.read(BUF_SIZE.to_i))
+        slice_by_buffer_size(request_header).each do |str|
+          socket.write str
+        end
+        while (t = socket.read(READ_BUF_SIZE.to_i))
           if block_given?
             yield t
             next
@@ -203,6 +208,12 @@ class SimpleHttp
       str << sprintf("%s: %s", key, header[key]) + SEP
     end
     str + SEP + body
+  end
+
+  def slice_by_buffer_size(str, buffer_size: WRITE_BUF_SIZE)
+    (1..(str.size / buffer_size + 1)).map do |i|
+      str[((i - 1) * buffer_size)...(i * buffer_size)]
+    end
   end
 
   class SimpleHttpResponse

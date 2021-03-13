@@ -63,9 +63,7 @@ assert 'SimpleHttp#get' do
   assert_equal 'Not Found on this server: /notfound', res.body
 end
 
-assert 'SimpleHttp#post' do
-  skip 'mruby-simplehttpserver doesn\'t yet support for getting message body.'
-
+assert 'SimpleHttp#post http' do
   http = SimpleHttp.new('http', host, port)
 
   res = http.post('/upload', {'Body' => 'Hello World', 'Content-Length' => '11'})
@@ -74,9 +72,46 @@ assert 'SimpleHttp#post' do
   assert_include res.header.split("\r\n"), 'Content-Length:11'
 end
 
-assert 'SimpleHttp#put' do
-  skip 'mruby-simplehttpserver doesn\'t yet support for getting message body.'
+assert 'SimpleHttp#post http body longer than WRITE_BUF_SIZE' do
+  body_length = SimpleHttp::WRITE_BUF_SIZE + 1
+  body = 'a' * body_length
 
+  http = SimpleHttp.new('http', 'httpbin.org')
+  res = http.post('/post', {'Body' => body})
+
+  assert_equal 200, res.code
+  assert_equal '200 OK', res.status
+  assert_equal body, JSON.parse(res.body)['data']
+end
+
+assert 'SimpleHttp#post https' do
+  body = 'Hello World'
+
+  https = SimpleHttp.new('https', 'httpbin.org')
+  res = https.post('/post', {'Body' => body})
+
+  assert_equal 200, res.code
+  assert_equal '200 OK', res.status
+  # https://httpbin.org/post returns POSTed body
+  assert_equal body, JSON.parse(res.body)['data']
+end
+
+# Boundary value test around SimpleHttp::WRITE_BUF_SIZE
+[SimpleHttp::WRITE_BUF_SIZE - 1, SimpleHttp::WRITE_BUF_SIZE, SimpleHttp::WRITE_BUF_SIZE + 1].each do |body_length|
+  assert 'SimpleHttp#post https body longer than WRITE_BUF_SIZE' do
+    body = 'a' * body_length
+
+    https = SimpleHttp.new('https', 'httpbin.org')
+    res = https.post('/post', {'Body' => body})
+
+    assert_equal 200, res.code
+    assert_equal '200 OK', res.status
+    # https://httpbin.org/post returns POSTed body
+    assert_equal body, JSON.parse(res.body)['data']
+  end
+end
+
+assert 'SimpleHttp#put' do
   http = SimpleHttp.new('http', host, port)
 
   res = http.put('/upload', {'Body' => 'Hello World', 'Content-Length' => '11'})
